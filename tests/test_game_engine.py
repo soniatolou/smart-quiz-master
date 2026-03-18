@@ -30,6 +30,10 @@ class TestGameEngine:
         provider.get_all_questions.return_value = [MOCK_QUESTIONS[0]]
         validator.validate_player_name.return_value = "Alice"
         validator.validate_answer.return_value = 1  # correct_index for Q1
+        tracker.get_score.return_value = 1
+        tracker.get_total.return_value = 1
+        tracker.get_percentage.return_value = 100.0
+        tracker.get_highscores.return_value = []
 
         with patch("builtins.input", side_effect=["Alice", "2"]):
             engine.run()
@@ -44,6 +48,10 @@ class TestGameEngine:
         provider.get_all_questions.return_value = [MOCK_QUESTIONS[0]]
         validator.validate_player_name.return_value = "Bob"
         validator.validate_answer.return_value = 0  # wrong answer
+        tracker.get_score.return_value = 0
+        tracker.get_total.return_value = 1
+        tracker.get_percentage.return_value = 0.0
+        tracker.get_highscores.return_value = []
 
         with patch("builtins.input", side_effect=["Bob", "1"]):
             engine.run()
@@ -77,6 +85,10 @@ class TestGameEngine:
             ValueError("out of range"),
             1,  # correct
         ]
+        tracker.get_score.return_value = 1
+        tracker.get_total.return_value = 1
+        tracker.get_percentage.return_value = 100.0
+        tracker.get_highscores.return_value = []
 
         with patch("builtins.input", side_effect=["Alice", "x", "9", "2"]):
             engine.run()
