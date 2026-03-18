@@ -1,0 +1,128 @@
+================================================================
+                        TESTSTRATEGI
+              Projekt: Smart Quiz Master
+              Kurs: GIK36R – Grupp 3
+              Datum: 2026-03-18
+================================================================
+
+1. INLEDNING
+----------------------------------------------------------------
+Detta dokument beskriver teststrategin för projektet Smart Quiz
+Master – ett terminalbaserat frågespel i Python. Strategin
+definierar hur, vad och på vilken nivå systemet testas, samt
+vilka verktyg och processer som används.
+
+
+2. TESTOBJEKT
+----------------------------------------------------------------
+Systemet består av fyra moduler som testas:
+
+  - Validator         Validerar spelarens inmatning (namn, svar)
+  - QuestionProvider  Laddar frågor från JSON-fil
+  - ScoreTracker      Håller poäng och sparar highscore
+  - GameEngine        Koordinerar ett komplett spel-flöde
+
+
+3. TESTNIVÅER
+----------------------------------------------------------------
+3.1 Enhetstestning (Unit Testing)
+  Varje klass testas isolerat. Beroenden till andra klasser
+  ersätts med mock-objekt (unittest.mock) för att isolera
+  beteendet hos den enhet som testas.
+
+  Täckning:
+    - Validator:        validate_answer(), validate_player_name()
+    - QuestionProvider: load_questions(), get_all_questions(),
+                        get_question_by_id(),
+                        get_questions_by_category(), count()
+    - ScoreTracker:     add_correct(), add_incorrect(),
+                        get_score(), get_total(),
+                        get_percentage(), reset(),
+                        save_highscore(), get_highscores()
+    - GameEngine:       run() – med mockade beroenden
+
+3.2 Integrationstestning
+  I nuläget hanteras integration via GameEngine-tester där
+  verkliga instanser av Validator och ScoreTracker kan
+  kombineras med mockad QuestionProvider. Detta säkerställer
+  att komponenterna fungerar tillsammans utan att kräva en
+  riktig JSON-fil.
+
+3.3 Systemtestning (manuell)
+  Manuell test av hela applikationen via terminalen med riktiga
+  JSON-filer och inmatning, för att verifiera det slutliga
+  användarflödet.
+
+
+4. TESTTYPER
+----------------------------------------------------------------
+  Funktionell testning   Verifierar att funktioner beter sig
+                         korrekt för giltiga och ogiltiga värden.
+
+  Gränsvärdesanalys      Testar gränsvärden, t.ex. svar = 1,
+                         svar = 4, namn på exakt 30 tecken.
+
+  Negativ testning       Testar felaktiga indata för att
+                         säkerställa att rätt undantag kastas
+                         (ValueError, FileNotFoundError).
+
+  Regressionstestning    Automatiserad via CI/CD-pipeline –
+                         alla tester körs vid varje push.
+
+
+5. TESTVERKTYG
+----------------------------------------------------------------
+  pytest          Testramverk för att skriva och köra tester
+  pytest-cov      Kodtäckningsmätning
+  unittest.mock   Mockning av beroenden (inbyggt i Python)
+  GitHub Actions  CI/CD – kör tester automatiskt vid push
+
+
+6. TESTMILJÖ
+----------------------------------------------------------------
+  Programspråk:   Python 3.11
+  Operativsystem: Ubuntu (GitHub Actions), macOS (lokalt)
+  Testkonfiguration: pytest.ini med testpaths = tests
+  Beroenden:      pytest >= 8.0, pytest-cov >= 5.0
+
+
+7. AUTOMATISERING OCH CI/CD
+----------------------------------------------------------------
+Alla tester körs automatiskt via GitHub Actions (.github/
+workflows/ci.yml) vid varje push till valfri branch samt vid
+pull request mot main-branchen.
+
+Pipeline-steg:
+  1. Checka ut koden
+  2. Sätt upp Python 3.11
+  3. Installera beroenden (pip install -r requirements.txt)
+  4. Kör pytest med kodtäckningsrapport
+
+
+8. INGÅNGSKRITERIER (Entry Criteria)
+----------------------------------------------------------------
+  - Koden är commitad till GitHub-repositoryt
+  - requirements.txt är komplett
+  - Testfiler finns i tests/-katalogen
+
+
+9. UTGÅNGSKRITERIER (Exit Criteria)
+----------------------------------------------------------------
+  - Alla automatiserade tester passerar (0 failures)
+  - Kodtäckning är acceptabel för projektets skala
+  - CI-pipelinen visar grön status på main-branchen
+
+
+10. RISKER
+----------------------------------------------------------------
+  Risk                          Hantering
+  ----------------------------  --------------------------------
+  Filsystemsberoenden i tester  Används tmp_path (pytest-fix-
+                                tur) för temporära filer
+  Import-fel i CI-miljö         pythonpath = . i pytest.ini
+  Otillräcklig kodtäckning      Tester skrivs parallellt med kod
+
+
+================================================================
+                       SLUT PÅ DOKUMENT
+================================================================

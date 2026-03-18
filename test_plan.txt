@@ -1,0 +1,166 @@
+================================================================
+                         TESTPLAN
+              Projekt: Smart Quiz Master
+              Kurs: GIK36R – Grupp 3
+              Datum: 2026-03-18
+================================================================
+
+1. INLEDNING
+----------------------------------------------------------------
+Detta dokument beskriver testplanen för Smart Quiz Master.
+Testplanen specificerar scope, mål, resurser, schema och
+ansvar för testarbetet.
+
+
+2. SYFTE OCH MÅL
+----------------------------------------------------------------
+Målet med testningen är att säkerställa att:
+
+  - Alla klasser fungerar korrekt var för sig (enhetstester)
+  - Felaktig inmatning hanteras på ett kontrollerat sätt
+  - Poängberäkning och highscore-sparning fungerar korrekt
+  - Hela spelflödet fungerar från start till slut
+  - Systemet inte kraschar vid oväntade indata
+
+
+3. SCOPE
+----------------------------------------------------------------
+Inkluderat i testningen:
+  [x] Validator – validate_answer() och validate_player_name()
+  [x] QuestionProvider – laddning och sökning av frågor
+  [x] ScoreTracker – poängräkning, procent, highscore
+  [x] GameEngine – spelflöde med mockade beroenden
+
+Exkluderat från automatiserad testning:
+  [ ] main.py (ingångspunkt, ej affärslogik)
+  [ ] Grafiskt gränssnitt (finns ej)
+  [ ] Nätverkskommunikation (finns ej)
+
+
+4. TESTMILJÖ
+----------------------------------------------------------------
+  Miljö           Verktyg / Specifikation
+  --------------  --------------------------------------------
+  Lokal maskin    macOS, Python 3.11, pytest >= 8.0
+  CI-miljö        GitHub Actions, ubuntu-latest, Python 3.11
+  Testdata        Temporära JSON-filer via pytests tmp_path
+  Konfiguration   pytest.ini (testpaths=tests, pythonpath=.)
+
+
+5. TESTSTRUKTUR OCH FILER
+----------------------------------------------------------------
+  tests/
+    __init__.py               (tom – markerar tests som paket)
+    test_validator.py         14 testfall för Validator
+    test_question_provider.py  8 testfall för QuestionProvider
+    test_score_tracker.py     11 testfall för ScoreTracker
+    test_game_engine.py        5 testfall för GameEngine
+
+
+6. TESTFALL – ÖVERSIKT
+----------------------------------------------------------------
+
+6.1 Validator (test_validator.py)
+  ID    Metod                  Beskrivning
+  ----  ---------------------  --------------------------------
+  V01   validate_answer        Giltigt svar "1" → returnerar 0
+  V02   validate_answer        Giltigt svar "4" → returnerar 3
+  V03   validate_answer        Inmatning med mellanslag → OK
+  V04   validate_answer        Tom sträng → ValueError (empty)
+  V05   validate_answer        Endast mellanslag → ValueError
+  V06   validate_answer        None → ValueError
+  V07   validate_answer        Bokstav "a" → ValueError
+  V08   validate_answer        "5" (> num_options) → ValueError
+  V09   validate_answer        "0" (< 1) → ValueError
+  V10   validate_answer        Negativt tal "-1" → ValueError
+  V11   validate_player_name   "  Alice  " → "Alice"
+  V12   validate_player_name   Tom sträng → ValueError (empty)
+  V13   validate_player_name   None → ValueError
+  V14   validate_player_name   31 tecken → ValueError (30 char)
+  V15   validate_player_name   Exakt 30 tecken → OK
+
+6.2 QuestionProvider (test_question_provider.py)
+  ID    Metod                  Beskrivning
+  ----  ---------------------  --------------------------------
+  Q01   load_questions         Giltig JSON-fil → 3 frågor laddas
+  Q02   get_all_questions      Returnerar alla frågor
+  Q03   get_question_by_id     Hittar fråga med id=2
+  Q04   get_question_by_id     Okänt id → returnerar None
+  Q05   get_questions_by_cat.  Filtrerar på kategori "Science"
+  Q06   load_questions         Fil saknas → FileNotFoundError
+  Q07   load_questions         JSON är inte lista → ValueError
+  Q08   count                  Före laddning → returnerar 0
+
+6.3 ScoreTracker (test_score_tracker.py)
+  ID    Metod                  Beskrivning
+  ----  ---------------------  --------------------------------
+  S01   get_score              Startpoäng är 0
+  S02   add_correct            Poäng ökas med 1
+  S03   add_incorrect          Poäng förblir 0
+  S04   get_total              Total ökar vid rätt och fel
+  S05   get_percentage         2 rätt, 1 fel → 66.7%
+  S06   get_percentage         Inga svar → 0.0%
+  S07   reset                  Poäng och total återställs till 0
+  S08   save_highscore         JSON-fil skapas
+  S09   save_highscore         Innehållet är korrekt (spelare,
+                               poäng, total)
+  S10   get_highscores         Sorterat fallande efter poäng
+  S11   get_highscores         Ingen fil → tom lista
+
+6.4 GameEngine (test_game_engine.py)
+  ID    Beskrivning
+  ----  -------------------------------------------------------
+  G01   Rätt svar → add_correct() anropas, ej add_incorrect()
+  G02   Fel svar → add_incorrect() anropas, ej add_correct()
+  G03   Inga frågor → spelet avslutas tidigt utan poänganrop
+  G04   Ogiltig inmatning upprepas tills giltigt svar ges
+  G05   save_highscore() anropas en gång efter alla frågor
+
+
+7. GODKÄNNANDEKRITERIER
+----------------------------------------------------------------
+  - Alla 38 testfall passerar utan fel
+  - Inga oväntade undantag kastas
+  - CI-pipelinen visar status "passing" på main-branchen
+  - pytest-cov visar täckning för samtliga moduler
+
+
+8. RISKER OCH ÅTGÄRDER
+----------------------------------------------------------------
+  Risk                          Sannolikhet  Åtgärd
+  ----------------------------  -----------  -------------------
+  Import-fel i CI               Låg          pythonpath=. i ini
+  Filberoenden skapar konflikter Låg         tmp_path i tester
+  GameEngine-tester speglar ej  Medel        Uppdatera mock-
+  verklig GameEngine-logik                   objekt vid ändr.
+  Tester ej uppdateras vid      Medel        Code review av PR
+  kodändringar                               kräver testuppdatering
+
+
+9. TESTSCHEMA
+----------------------------------------------------------------
+  Aktivitet                     Tidpunkt
+  ----------------------------  ---------------------------------
+  Enhetstester skrivs           Parallellt med implementation
+  CI-pipeline aktiverad         Vid initial commit
+  Tester körs automatiskt       Vid varje push / pull request
+  Manuell systemtest            Innan inlämning
+  Testrapport sammanställs      Innan inlämningsdatum
+
+
+10. ANSVAR
+----------------------------------------------------------------
+  Aktivitet                     Ansvarig
+  ----------------------------  ---------------------------------
+  Enhetstester – Validator      Grupp 3
+  Enhetstester – QuestionProv.  Grupp 3
+  Enhetstester – ScoreTracker   Grupp 3
+  Enhetstester – GameEngine     Grupp 3
+  CI/CD-konfiguration           Grupp 3
+  Manuell systemtest            Grupp 3
+  Testrapport                   Grupp 3
+
+
+================================================================
+                       SLUT PÅ DOKUMENT
+================================================================
