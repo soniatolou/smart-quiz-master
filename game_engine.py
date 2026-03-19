@@ -31,7 +31,26 @@ class GameEngine:
         player_name = self.validator.validate_player_name(raw_name)
 
         self.question_provider.load_questions()
-        questions = self.question_provider.get_all_questions()
+        all_questions = self.question_provider.get_all_questions()
+
+        categories = sorted({q.get("category", "Unknown") for q in all_questions})
+        print("\nAvailable categories:")
+        print("  0. All categories")
+        for i, cat in enumerate(categories, start=1):
+            print(f"  {i}. {cat}")
+
+        while True:
+            raw_cat = input("Choose a category (enter number): ").strip()
+            if raw_cat.isdigit() and 0 <= int(raw_cat) <= len(categories):
+                break
+            print(f"Please enter a number between 0 and {len(categories)}.")
+
+        if int(raw_cat) == 0:
+            questions = all_questions
+        else:
+            chosen = categories[int(raw_cat) - 1]
+            questions = self.question_provider.get_questions_by_category(chosen)
+            print(f"Category: {chosen}")
 
         if not questions:
             print("No questions available. Exiting.")
