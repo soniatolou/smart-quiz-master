@@ -6,9 +6,27 @@ from question_provider import QuestionProvider
 
 
 SAMPLE_QUESTIONS = [
-    {"id": 1, "question": "Q1?", "options": ["A", "B", "C", "D"], "correct_index": 0, "category": "Science"},
-    {"id": 2, "question": "Q2?", "options": ["A", "B", "C", "D"], "correct_index": 1, "category": "History"},
-    {"id": 3, "question": "Q3?", "options": ["A", "B", "C", "D"], "correct_index": 2, "category": "Science"},
+    {
+        "id": 1,
+        "question": "Q1?",
+        "options": ["A", "B", "C", "D"],
+        "correct_index": 0,
+        "category": "Science",
+    },
+    {
+        "id": 2,
+        "question": "Q2?",
+        "options": ["A", "B", "C", "D"],
+        "correct_index": 1,
+        "category": "History",
+    },
+    {
+        "id": 3,
+        "question": "Q3?",
+        "options": ["A", "B", "C", "D"],
+        "correct_index": 2,
+        "category": "Science",
+    },
 ]
 
 
@@ -25,7 +43,7 @@ class TestQuestionProvider:
         assert provider.count() == 3
 
     def test_get_all_questions_returns_copy(self, tmp_path):
-        """get_all_questions should return all questions."""
+        """get_all_questions should return all questions"""
         file = tmp_path / "questions.json"
         file.write_text(json.dumps(SAMPLE_QUESTIONS), encoding="utf-8")
 
