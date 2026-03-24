@@ -61,7 +61,7 @@ class ScoreTracker:
             json.dump(scores, f, indent=2, ensure_ascii=False)
 
     def get_highscores(self) -> List[Dict]:
-        """Return the sorted list of high scores."""
+        """Return the sorted list of high scores"""
         return self._load_highscores()
 
     def _load_highscores(self) -> List[Dict]:
