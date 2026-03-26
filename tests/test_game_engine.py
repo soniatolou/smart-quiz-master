@@ -30,8 +30,12 @@ class TestGameEngine:
         provider.get_all_questions.return_value = [MOCK_QUESTIONS[0]]
         validator.validate_player_name.return_value = "Alice"
         validator.validate_answer.return_value = 1  # correct_index for Q1
+        tracker.get_score.return_value = 1
+        tracker.get_total.return_value = 1
+        tracker.get_percentage.return_value = 100.0
+        tracker.get_highscores.return_value = []
 
-        with patch("builtins.input", side_effect=["Alice", "2"]):
+        with patch("builtins.input", side_effect=["Alice", "0", "2"]):  # "0" = alla kategorier
             engine.run()
 
         tracker.add_correct.assert_called_once()
@@ -44,13 +48,16 @@ class TestGameEngine:
         provider.get_all_questions.return_value = [MOCK_QUESTIONS[0]]
         validator.validate_player_name.return_value = "Bob"
         validator.validate_answer.return_value = 0  # wrong answer
+        tracker.get_score.return_value = 0
+        tracker.get_total.return_value = 1
+        tracker.get_percentage.return_value = 0.0
+        tracker.get_highscores.return_value = []
 
-        with patch("builtins.input", side_effect=["Bob", "1"]):
+        with patch("builtins.input", side_effect=["Bob", "0", "1"]):  # "0" = alla kategorier
             engine.run()
 
         tracker.add_incorrect.assert_called_once()
         tracker.add_correct.assert_not_called()
-
     def test_no_questions_exits_early(self):
         """If there are no questions, the engine should exit without calling add_correct/add_incorrect."""
         engine, provider, tracker, validator = make_engine()
@@ -58,12 +65,11 @@ class TestGameEngine:
         provider.get_all_questions.return_value = []
         validator.validate_player_name.return_value = "Alice"
 
-        with patch("builtins.input", return_value="Alice"):
+        with patch("builtins.input", side_effect=["Alice", "0"]):
             engine.run()
 
         tracker.add_correct.assert_not_called()
         tracker.add_incorrect.assert_not_called()
-
     def test_invalid_input_retried_until_valid(self):
         """The engine should keep asking until the player gives valid input."""
         engine, provider, tracker, validator = make_engine()
@@ -77,8 +83,12 @@ class TestGameEngine:
             ValueError("out of range"),
             1,  # correct
         ]
+        tracker.get_score.return_value = 1
+        tracker.get_total.return_value = 1
+        tracker.get_percentage.return_value = 100.0
+        tracker.get_highscores.return_value = []
 
-        with patch("builtins.input", side_effect=["Alice", "x", "9", "2"]):
+        with patch("builtins.input", side_effect=["Alice", "0", "x", "9", "2"]):  # "0" = alla kategorier
             engine.run()
 
         assert validator.validate_answer.call_count == 3
